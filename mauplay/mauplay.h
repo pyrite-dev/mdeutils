@@ -10,9 +10,8 @@
 /* External */
 
 /* Standard */
-#include <sys/stat.h>
-#include <unistd.h>
 #include <pwd.h>
+#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 
