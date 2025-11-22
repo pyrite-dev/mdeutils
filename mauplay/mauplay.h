@@ -15,4 +15,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* main.c */
+extern MwWidget	  window;
+
 #endif
