@@ -251,7 +251,6 @@ int main() {
 
 	ui_init();
 
-	db_add("test.mp3");
 	db_add("test2.mp3");
 	db_scan();
 
