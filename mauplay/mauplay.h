@@ -37,13 +37,13 @@ typedef struct queue {
 } queue_t;
 
 /* main.c */
-extern MwWidget	  window;
-extern MwWidget	  album, info;
-extern MwWidget	  bskipback, bplay, bpause, bstop, bskipfwd, brepeat, bshuffle;
-extern MwWidget	  eltime, seekbar, rmtime;
-extern MwWidget	  tree, list;
+extern MwWidget	      window;
+extern MwWidget	      album, info;
+extern MwWidget	      bskipback, bplay, bpause, bstop, bskipfwd, brepeat, bshuffle;
+extern MwWidget	      eltime, seekbar, rmtime;
+extern MwWidget	      tree, list;
 extern unsigned char* pxalbumdata;
-extern MwLLPixmap pxalbum;
+extern MwLLPixmap     pxalbum;
 
 /* db.c */
 extern numkv_t* db_musics;
