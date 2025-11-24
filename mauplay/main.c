@@ -7,15 +7,16 @@
 #include "skipfwd.xpm"
 
 #include "repeat.xpm"
+#include "repeatsong.xpm"
 #include "shuffle.xpm"
 
 MwWidget       window;
-MwWidget       menu, album, infoframe, info, infosep, bskipback, bplay, bpause, bstop, bskipfwd, modesep, brepeat, bshuffle;
+MwWidget       menu, albumframe, album, infoframe, info, timelabel, infosep, bskipback, bplay, bpause, bstop, bskipfwd, modesep, brepeat, bshuffle;
 MwWidget       mainsep;
-MwWidget       eltime, seekbar, rmtime;
+MwWidget       seekbar;
 MwWidget       tree, list;
-MwLLPixmap     pxalbum, pxskipback, pxplay, pxpause, pxstop, pxskipfwd, pxrepeat, pxshuffle;
-MwLLPixmap pxoptical;
+MwLLPixmap     pxalbum, pxskipback, pxplay, pxpause, pxstop, pxskipfwd, pxrepeat, pxrepeatsong, pxshuffle;
+MwLLPixmap     pxoptical, pxfoldermusic, pxgenre, pxartist;
 unsigned char* pxalbumdata;
 
 static void resize(MwWidget handle, void* user, void* client) {
@@ -23,11 +24,18 @@ static void resize(MwWidget handle, void* user, void* client) {
 	int wh = MwGetInteger(window, MwNheight) - MwGetInteger(menu, MwNheight);
 	int y  = MwGetInteger(menu, MwNheight);
 
-	MwVaApply(album,
+	MwVaApply(albumframe,
 		  MwNx, 5,
 		  MwNy, y + 5,
 		  MwNwidth, 32,
 		  MwNheight, 32,
+		  NULL);
+
+	MwVaApply(album,
+		  MwNx, MwDefaultBorderWidth(album),
+		  MwNy, MwDefaultBorderWidth(album),
+		  MwNwidth, 32 - MwDefaultBorderWidth(album) * 2,
+		  MwNheight, 32 - MwDefaultBorderWidth(album) * 2,
 		  NULL);
 
 	MwVaApply(infoframe,
@@ -42,6 +50,13 @@ static void resize(MwWidget handle, void* user, void* client) {
 		  MwNy, MwDefaultBorderWidth(infoframe),
 		  MwNwidth, MwGetInteger(infoframe, MwNwidth) - MwDefaultBorderWidth(infoframe) * 2,
 		  MwNheight, MwGetInteger(infoframe, MwNheight) - MwDefaultBorderWidth(infoframe) * 2,
+		  NULL);
+
+	MwVaApply(timelabel,
+		  MwNx, MwGetInteger(info, MwNwidth) * 2 / 3,
+		  MwNy, MwDefaultBorderWidth(infoframe) + MwGetInteger(info, MwNheight) / 2,
+		  MwNwidth, MwGetInteger(info, MwNwidth) / 3,
+		  MwNheight, MwGetInteger(info, MwNheight) / 2,
 		  NULL);
 
 	MwVaApply(infosep,
@@ -114,24 +129,10 @@ static void resize(MwWidget handle, void* user, void* client) {
 		  MwNheight, 10,
 		  NULL);
 
-	MwVaApply(eltime,
+	MwVaApply(seekbar,
 		  MwNx, 5,
 		  MwNy, y + 5 + 32 + 10,
-		  MwNwidth, MwTextWidth(window, "000:00"),
-		  MwNheight, 16,
-		  NULL);
-
-	MwVaApply(seekbar,
-		  MwNx, 5 + MwTextWidth(window, "000:00") + 5,
-		  MwNy, y + 5 + 32 + 10,
-		  MwNwidth, ww - (5 + MwTextWidth(window, "000:00") + 5) * 2,
-		  MwNheight, 16,
-		  NULL);
-
-	MwVaApply(rmtime,
-		  MwNx, ww - 5 - MwTextWidth(window, "000:00"),
-		  MwNy, y + 5 + 32 + 10,
-		  MwNwidth, MwTextWidth(window, "000:00"),
+		  MwNwidth, ww - 5 * 2,
 		  MwNheight, 16,
 		  NULL);
 
@@ -157,68 +158,67 @@ int main() {
 
 	MwLibraryInit();
 
-	window	  = MwVaCreateWidget(MwWindowClass, "main", NULL, MwDEFAULT, MwDEFAULT, 600, 400,
-				     MwNtitle, "mauplay",
-				     NULL);
-	menu	  = MwCreateWidget(MwMenuClass, "menu", window, 0, 0, 0, 0);
-	album	  = MwCreateWidget(MwImageClass, "album", window, 0, 0, 0, 0);
-	infoframe = MwVaCreateWidget(MwFrameClass, "infoframe", window, 0, 0, 0, 0,
-				     MwNbackground, "#000",
-				     MwNforeground, "#0f0",
-				     MwNhasBorder, 1,
-				     MwNinverted, 1,
-				     NULL);
-	info	  = MwVaCreateWidget(MwLabelClass, "info", infoframe, 0, 0, 0, 0,
-				     MwNalignment, MwALIGNMENT_BEGINNING,
-				     NULL);
-	infosep	  = MwVaCreateWidget(MwSeparatorClass, "infosep", window, 0, 0, 0, 0,
-				     MwNorientation, MwVERTICAL,
-				     NULL);
-	bskipback = MwVaCreateWidget(MwButtonClass, "skipback", window, 0, 0, 0, 0,
-				     MwNflat, 1,
-				     NULL);
-	bplay	  = MwVaCreateWidget(MwButtonClass, "play", window, 0, 0, 0, 0,
-				     MwNflat, 1,
-				     NULL);
-	bpause	  = MwVaCreateWidget(MwButtonClass, "pause", window, 0, 0, 0, 0,
-				     MwNflat, 1,
-				     NULL);
-	bstop	  = MwVaCreateWidget(MwButtonClass, "stop", window, 0, 0, 0, 0,
-				     MwNflat, 1,
-				     NULL);
-	bskipfwd  = MwVaCreateWidget(MwButtonClass, "skipfwd", window, 0, 0, 0, 0,
-				     MwNflat, 1,
-				     NULL);
-	modesep	  = MwVaCreateWidget(MwSeparatorClass, "modesep", window, 0, 0, 0, 0,
-				     MwNorientation, MwVERTICAL,
-				     NULL);
-	brepeat	  = MwVaCreateWidget(MwButtonClass, "repeat", window, 0, 0, 0, 0,
-				     MwNflat, 1,
-				     NULL);
-	bshuffle  = MwVaCreateWidget(MwButtonClass, "shuffle", window, 0, 0, 0, 0,
-				     MwNflat, 1,
-				     NULL);
-	mainsep	  = MwVaCreateWidget(MwSeparatorClass, "mainsep", window, 0, 0, 0, 0,
-				     MwNorientation, MwHORIZONTAL,
-				     NULL);
-	eltime	  = MwVaCreateWidget(MwLabelClass, "eltime", window, 0, 0, 0, 0,
-				     MwNalignment, MwALIGNMENT_END,
-				     MwNtext, "000:00",
-				     NULL);
-	seekbar	  = MwVaCreateWidget(MwScrollBarClass, "seekbar", window, 0, 0, 0, 0,
-				     MwNorientation, MwHORIZONTAL,
-				     MwNareaShown, 15,
-				     MwNshowArrows, 0,
-				     NULL);
-	rmtime	  = MwVaCreateWidget(MwLabelClass, "rmtime", window, 0, 0, 0, 0,
-				     MwNalignment, MwALIGNMENT_END,
-				     MwNtext, "000:00",
-				     NULL);
-	tree	  = MwCreateWidget(MwTreeViewClass, "tree", window, 0, 0, 0, 0);
-	list	  = MwVaCreateWidget(MwListBoxClass, "list", window, 0, 0, 0, 0,
-				     MwNhasHeading, 1,
-				     MwNleftPadding, 16,
-				     NULL);
+	window	   = MwVaCreateWidget(MwWindowClass, "main", NULL, MwDEFAULT, MwDEFAULT, 600, 400,
+				      MwNtitle, "mauplay",
+				      NULL);
+	menu	   = MwCreateWidget(MwMenuClass, "menu", window, 0, 0, 0, 0);
+	albumframe = MwVaCreateWidget(MwFrameClass, "albumframe", window, 0, 0, 0, 0,
+				      MwNhasBorder, 1,
+				      MwNinverted, 1,
+				      NULL);
+	album	   = MwCreateWidget(MwImageClass, "album", albumframe, 0, 0, 0, 0);
+	infoframe  = MwVaCreateWidget(MwFrameClass, "infoframe", window, 0, 0, 0, 0,
+				      MwNbackground, "#000",
+				      MwNforeground, "#0f0",
+				      MwNhasBorder, 1,
+				      MwNinverted, 1,
+				      NULL);
+	info	   = MwVaCreateWidget(MwLabelClass, "info", infoframe, 0, 0, 0, 0,
+				      MwNalignment, MwALIGNMENT_BEGINNING,
+				      NULL);
+	timelabel  = MwVaCreateWidget(MwLabelClass, "timelabel", infoframe, 0, 0, 0, 0,
+				      MwNalignment, MwALIGNMENT_END,
+				      NULL);
+	infosep	   = MwVaCreateWidget(MwSeparatorClass, "infosep", window, 0, 0, 0, 0,
+				      MwNorientation, MwVERTICAL,
+				      NULL);
+	bskipback  = MwVaCreateWidget(MwButtonClass, "skipback", window, 0, 0, 0, 0,
+				      MwNflat, 1,
+				      NULL);
+	bplay	   = MwVaCreateWidget(MwButtonClass, "play", window, 0, 0, 0, 0,
+				      MwNflat, 1,
+				      NULL);
+	bpause	   = MwVaCreateWidget(MwButtonClass, "pause", window, 0, 0, 0, 0,
+				      MwNflat, 1,
+				      NULL);
+	bstop	   = MwVaCreateWidget(MwButtonClass, "stop", window, 0, 0, 0, 0,
+				      MwNflat, 1,
+				      NULL);
+	bskipfwd   = MwVaCreateWidget(MwButtonClass, "skipfwd", window, 0, 0, 0, 0,
+				      MwNflat, 1,
+				      NULL);
+	modesep	   = MwVaCreateWidget(MwSeparatorClass, "modesep", window, 0, 0, 0, 0,
+				      MwNorientation, MwVERTICAL,
+				      NULL);
+	brepeat	   = MwVaCreateWidget(MwButtonClass, "repeat", window, 0, 0, 0, 0,
+				      MwNflat, 1,
+				      NULL);
+	bshuffle   = MwVaCreateWidget(MwButtonClass, "shuffle", window, 0, 0, 0, 0,
+				      MwNflat, 1,
+				      NULL);
+	mainsep	   = MwVaCreateWidget(MwSeparatorClass, "mainsep", window, 0, 0, 0, 0,
+				      MwNorientation, MwHORIZONTAL,
+				      NULL);
+	seekbar	   = MwVaCreateWidget(MwScrollBarClass, "seekbar", window, 0, 0, 0, 0,
+				      MwNorientation, MwHORIZONTAL,
+				      MwNareaShown, 15,
+				      MwNshowArrows, 0,
+				      NULL);
+	tree	   = MwCreateWidget(MwTreeViewClass, "tree", window, 0, 0, 0, 0);
+	list	   = MwVaCreateWidget(MwListBoxClass, "list", window, 0, 0, 0, 0,
+				      MwNhasHeading, 1,
+				      MwNleftPadding, 16,
+				      NULL);
 
 	pxalbumdata = malloc(ALBUMWIDTH * ALBUMWIDTH * 4);
 	memset(pxalbumdata, 0, ALBUMWIDTH * ALBUMWIDTH * 4);
@@ -232,10 +232,14 @@ int main() {
 
 	free(pxalbumdata);
 
-	pxrepeat  = MwLoadXPM(window, repeat_xpm);
-	pxshuffle = MwLoadXPM(window, shuffle_xpm);
+	pxrepeat     = MwLoadXPM(window, repeat_xpm);
+	pxrepeatsong = MwLoadXPM(window, repeatsong_xpm);
+	pxshuffle    = MwLoadXPM(window, shuffle_xpm);
 
-	pxoptical = MwLoadImage(window, ICON128DIR "/optical.png");
+	pxoptical     = MwLoadImage(window, ICON16DIR "/optical.png");
+	pxfoldermusic = MwLoadImage(window, ICON16DIR "/folder-music.png");
+	pxartist      = MwLoadImage(window, ICON16DIR "/artist.png");
+	pxgenre	      = MwLoadImage(window, ICON16DIR "/genre.png");
 
 	MwSetVoid(album, MwNpixmap, pxalbum);
 

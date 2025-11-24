@@ -52,7 +52,7 @@ int db_init(void) {
 
 	free(path);
 
-	if((st = db_exec("CREATE TABLE IF NOT EXISTS cache (path TEXT PRIMARY KEY, title TEXT, artist TEXT, album TEXT, genre TEXT, length INTEGER, mtime INTEGER)")) != 0) {
+	if((st = db_exec("CREATE TABLE IF NOT EXISTS cache (path TEXT PRIMARY KEY, title TEXT, artist TEXT, album TEXT, genre TEXT, length INTEGER, track INTEGER, mtime INTEGER)")) != 0) {
 		sqlite3_close(db);
 		return st;
 	}
@@ -68,6 +68,7 @@ static int db_bind(sqlite3_stmt* stmt, const char* path) {
 	const char* s_album;
 	const char* s_genre;
 	int	    s_length;
+	int	    s_track = 0;
 	struct stat s;
 	if(sound == NULL) return 1;
 
@@ -75,6 +76,7 @@ static int db_bind(sqlite3_stmt* stmt, const char* path) {
 	s_artist = sound->context->artist;
 	s_album	 = sound->context->album;
 	s_genre	 = sound->context->genre;
+	s_track	 = sound->context->track;
 	s_length = sound->context->frames / sound->context->sample_rate;
 
 	if(s_title == NULL) s_title = path;
@@ -92,7 +94,8 @@ static int db_bind(sqlite3_stmt* stmt, const char* path) {
 	sqlite3_bind_text(stmt, 4, s_album, -1, SQLITE_TRANSIENT);
 	sqlite3_bind_text(stmt, 5, s_genre, -1, SQLITE_TRANSIENT);
 	sqlite3_bind_int(stmt, 6, s_length);
-	sqlite3_bind_int64(stmt, 7, s.st_mtime);
+	sqlite3_bind_int64(stmt, 7, s_track);
+	sqlite3_bind_int64(stmt, 8, s.st_mtime);
 
 	MDESoundClose(sound);
 
@@ -104,7 +107,7 @@ static int db_bind(sqlite3_stmt* stmt, const char* path) {
 void db_add(const char* path) {
 	sqlite3_stmt* stmt;
 
-	if(sqlite3_prepare_v2(db, "INSERT OR REPLACE INTO cache VALUES(?,?,?,?,?,?,?)", -1, &stmt, NULL) != SQLITE_OK) {
+	if(sqlite3_prepare_v2(db, "INSERT OR REPLACE INTO cache VALUES(?,?,?,?,?,?,?,?)", -1, &stmt, NULL) != SQLITE_OK) {
 		return;
 	}
 
@@ -195,4 +198,27 @@ void db_scan(void) {
 	ui_set_genres(shlen(db_genres));
 
 	MwDispatchUserHandler(tree, MwNactivateHandler, ui_last);
+}
+
+char** db_find(const char* query, const char* param, const char* additional) {
+	char**	      r = NULL;
+	sqlite3_stmt* stmt;
+	char	      q[128];
+
+	sprintf(q, "SELECT * FROM cache WHERE %s = ? ORDER BY %s ASC", query, additional == NULL ? query : additional);
+
+	if(sqlite3_prepare_v2(db, q, -1, &stmt, NULL) != SQLITE_OK) {
+		return NULL;
+	}
+
+	sqlite3_bind_text(stmt, 1, param, -1, SQLITE_TRANSIENT);
+
+	while(sqlite3_step(stmt) == SQLITE_ROW) {
+		char* p = MDEStringDuplicate(sqlite3_column_text(stmt, 0));
+		arrput(r, p);
+	}
+
+	sqlite3_finalize(stmt);
+
+	return r;
 }

@@ -11,6 +11,10 @@ static void* genres;
 void*	     ui_last;
 static int   changed = 0;
 
+static void* file_add_file;
+static void* file_add_directory;
+static void* file_add_playlist;
+
 void ui_list_reset(const char* merge) {
 	void* p;
 
@@ -90,102 +94,109 @@ void ui_set_genres(int v) {
 	MwTreeViewSetLabel(tree, genres, buf);
 }
 
-static void tree_activate(MwWidget handle, void* user, void* client) {
-	if(client == play_queue || client == all_music || client == albums || client == artists || client == genres) {
-		void* p = MwListBoxCreatePacket();
-		int   i;
-		if(client == play_queue) {
-			pthread_mutex_lock(&audio_mutex);
-			for(i = 0; i < arrlen(queue); i++) {
-				char buf[64];
-				int  ind   = shgeti(db_musics, queue[i].path);
-				int  index = MwListBoxPacketInsert(p, -1);
-				sprintf(buf, "%d", i + 1);
+static char*  current	   = NULL;
+static char** current_list = NULL;
+static void   tree_activate(MwWidget handle, void* user, void* client) {
+	  if(client == play_queue || client == all_music || client == albums || client == artists || client == genres) {
+		  void* p = MwListBoxCreatePacket();
+		  int	i;
+		  if(current != NULL) free(current);
+		  current = NULL;
+		  if(client == play_queue) {
+			  pthread_mutex_lock(&audio_mutex);
+			  for(i = 0; i < arrlen(queue); i++) {
+				  char buf[64];
+				  int  ind   = shgeti(db_musics, queue[i].path);
+				  int  index = MwListBoxPacketInsert(p, -1);
+				  sprintf(buf, "%d", i + 1);
 
-				MwListBoxPacketSetIcon(p, index, pxoptical);
-				MwListBoxPacketSet(p, index, 0, buf);
-				MwListBoxPacketSet(p, index, 1, db_musics[ind].title);
-				MwListBoxPacketSet(p, index, 2, db_musics[ind].artist);
+				  MwListBoxPacketSetIcon(p, index, pxoptical);
+				  MwListBoxPacketSet(p, index, 0, buf);
+				  MwListBoxPacketSet(p, index, 1, db_musics[ind].title);
+				  MwListBoxPacketSet(p, index, 2, db_musics[ind].artist);
 
-				sprintf(buf, "%d:%02d", db_musics[ind].length / 60, db_musics[ind].length % 60);
+				  sprintf(buf, "%d:%02d", db_musics[ind].length / 60, db_musics[ind].length % 60);
 
-				MwListBoxPacketSet(p, index, 3, buf);
-			}
-			pthread_mutex_unlock(&audio_mutex);
-		}
-		if(client == all_music) {
-			for(i = 0; i < shlen(db_musics); i++) {
-				char buf[64];
-				int  index = MwListBoxPacketInsert(p, -1);
-				sprintf(buf, "%d", i + 1);
+				  MwListBoxPacketSet(p, index, 3, buf);
+			  }
+			  pthread_mutex_unlock(&audio_mutex);
+		  }
+		  if(client == all_music) {
+			  for(i = 0; i < shlen(db_musics); i++) {
+				  char buf[64];
+				  int  index = MwListBoxPacketInsert(p, -1);
+				  sprintf(buf, "%d", i + 1);
 
-				MwListBoxPacketSetIcon(p, index, pxoptical);
-				MwListBoxPacketSet(p, index, 0, buf);
-				MwListBoxPacketSet(p, index, 1, db_musics[i].title);
-				MwListBoxPacketSet(p, index, 2, db_musics[i].artist);
+				  MwListBoxPacketSetIcon(p, index, pxoptical);
+				  MwListBoxPacketSet(p, index, 0, buf);
+				  MwListBoxPacketSet(p, index, 1, db_musics[i].title);
+				  MwListBoxPacketSet(p, index, 2, db_musics[i].artist);
 
-				sprintf(buf, "%d:%02d", db_musics[i].length / 60, db_musics[i].length % 60);
+				  sprintf(buf, "%d:%02d", db_musics[i].length / 60, db_musics[i].length % 60);
 
-				MwListBoxPacketSet(p, index, 3, buf);
-			}
-		}
-		if(client == albums) {
-			for(i = 0; i < shlen(db_albums); i++) {
-				char buf[64];
-				int  index = MwListBoxPacketInsert(p, -1);
-				sprintf(buf, "%d", i + 1);
+				  MwListBoxPacketSet(p, index, 3, buf);
+			  }
+		  }
+		  if(client == albums) {
+			  for(i = 0; i < shlen(db_albums); i++) {
+				  char buf[64];
+				  int  index = MwListBoxPacketInsert(p, -1);
+				  sprintf(buf, "%d", i + 1);
 
-				MwListBoxPacketSet(p, index, 0, buf);
-				MwListBoxPacketSet(p, index, 1, db_albums[i].key);
+				  MwListBoxPacketSetIcon(p, index, pxfoldermusic);
+				  MwListBoxPacketSet(p, index, 0, buf);
+				  MwListBoxPacketSet(p, index, 1, db_albums[i].key);
 
-				sprintf(buf, "%d:%02d", db_musics[i].length / 60, db_albums[i].length % 60);
+				  sprintf(buf, "%d:%02d", db_albums[i].length / 60, db_albums[i].length % 60);
 
-				MwListBoxPacketSet(p, index, 2, buf);
-			}
-		}
-		if(client == artists) {
-			for(i = 0; i < shlen(db_artists); i++) {
-				char buf[64];
-				int  index = MwListBoxPacketInsert(p, -1);
-				sprintf(buf, "%d", i + 1);
+				  MwListBoxPacketSet(p, index, 2, buf);
+			  }
+		  }
+		  if(client == artists) {
+			  for(i = 0; i < shlen(db_artists); i++) {
+				  char buf[64];
+				  int  index = MwListBoxPacketInsert(p, -1);
+				  sprintf(buf, "%d", i + 1);
 
-				MwListBoxPacketSet(p, index, 0, buf);
-				MwListBoxPacketSet(p, index, 1, db_artists[i].key);
+				  MwListBoxPacketSetIcon(p, index, pxartist);
+				  MwListBoxPacketSet(p, index, 0, buf);
+				  MwListBoxPacketSet(p, index, 1, db_artists[i].key);
 
-				sprintf(buf, "%d:%02d", db_artists[i].length / 60, db_artists[i].length % 60);
+				  sprintf(buf, "%d:%02d", db_artists[i].length / 60, db_artists[i].length % 60);
 
-				MwListBoxPacketSet(p, index, 2, buf);
-			}
-		}
-		if(client == genres) {
-			for(i = 0; i < shlen(db_genres); i++) {
-				char buf[64];
-				int  index = MwListBoxPacketInsert(p, -1);
-				sprintf(buf, "%d", i + 1);
+				  MwListBoxPacketSet(p, index, 2, buf);
+			  }
+		  }
+		  if(client == genres) {
+			  for(i = 0; i < shlen(db_genres); i++) {
+				  char buf[64];
+				  int  index = MwListBoxPacketInsert(p, -1);
+				  sprintf(buf, "%d", i + 1);
 
-				MwListBoxPacketSet(p, index, 0, buf);
-				MwListBoxPacketSet(p, index, 1, db_genres[i].key);
+				  MwListBoxPacketSetIcon(p, index, pxgenre);
+				  MwListBoxPacketSet(p, index, 0, buf);
+				  MwListBoxPacketSet(p, index, 1, db_genres[i].key);
 
-				sprintf(buf, "%d:%02d", db_genres[i].length / 60, db_genres[i].length % 60);
+				  sprintf(buf, "%d:%02d", db_genres[i].length / 60, db_genres[i].length % 60);
 
-				MwListBoxPacketSet(p, index, 2, buf);
-			}
-		}
+				  MwListBoxPacketSet(p, index, 2, buf);
+			  }
+		  }
 
-		if(client == albums) {
-			ui_list_reset("Album");
-		} else if(client == artists) {
-			ui_list_reset("Artist");
-		} else if(client == genres) {
-			ui_list_reset("Genre");
-		} else {
-			ui_list_reset(NULL);
-		}
-		MwListBoxInsert(list, -1, p);
-		MwListBoxDestroyPacket(p);
+		  if(client == albums) {
+			  ui_list_reset("Album");
+		  } else if(client == artists) {
+			  ui_list_reset("Artist");
+		  } else if(client == genres) {
+			  ui_list_reset("Genre");
+		  } else {
+			  ui_list_reset(NULL);
+		  }
+		  MwListBoxInsert(list, -1, p);
+		  MwListBoxDestroyPacket(p);
 
-		ui_last = client;
-	}
+		  ui_last = client;
+	  }
 }
 
 static void list_activate(MwWidget handle, void* user, void* client) {
@@ -201,6 +212,70 @@ static void list_activate(MwWidget handle, void* user, void* client) {
 		pthread_mutex_unlock(&audio_mutex);
 	} else if(ui_last == all_music) {
 		audio_queue(db_musics[(*(int*)client) - 1].key);
+	} else if(ui_last == albums || ui_last == artists || ui_last == genres) {
+		numkv_t*    kv = NULL;
+		const char* n;
+		if(ui_last == albums) {
+			kv = db_albums;
+			n  = "album";
+		}
+		if(ui_last == artists) {
+			kv = db_artists;
+			n  = "artist";
+		}
+		if(ui_last == genres) {
+			kv = db_genres;
+			n  = "genre";
+		}
+
+		if(current == NULL) {
+			void* p = MwListBoxCreatePacket();
+			int   i;
+			int   index;
+
+			current = MDEStringDuplicate(kv[(*(int*)client) - 1].key);
+
+			for(i = 0; i < arrlen(current_list); i++) {
+				free(current_list[i]);
+			}
+			arrfree(current_list);
+
+			index = MwListBoxPacketInsert(p, -1);
+
+			MwListBoxPacketSetIcon(p, index, pxfoldermusic);
+			MwListBoxPacketSet(p, index, 0, "");
+			MwListBoxPacketSet(p, index, 1, "..");
+
+			current_list = db_find(n, current, ui_last == albums ? "track" : NULL);
+			for(i = 0; i < arrlen(current_list); i++) {
+				char	buf[128];
+				numkv_t kv = shgets(db_musics, current_list[i]);
+
+				index = MwListBoxPacketInsert(p, -1);
+
+				sprintf(buf, "%d", i + 1);
+
+				MwListBoxPacketSetIcon(p, index, pxoptical);
+				MwListBoxPacketSet(p, index, 0, buf);
+				MwListBoxPacketSet(p, index, 1, kv.title);
+				MwListBoxPacketSet(p, index, 2, kv.artist);
+
+				sprintf(buf, "%d:%02d", kv.length / 60, kv.length % 60);
+
+				MwListBoxPacketSet(p, index, 3, buf);
+			}
+
+			ui_list_reset(NULL);
+			MwListBoxInsert(handle, -1, p);
+			MwListBoxDestroyPacket(p);
+		} else {
+			int index = *(int*)client;
+			if(index == 1) {
+				MwDispatchUserHandler(tree, MwNactivateHandler, ui_last);
+			} else {
+				audio_queue(current_list[index - 2]);
+			}
+		}
 	}
 }
 
@@ -271,16 +346,11 @@ static void window_tick(MwWidget handle, void* user, void* client) {
 	}
 	if(arrlen(queue) > 0 && queue_seek != -1) {
 		int  elsec = queue[queue_seek].frames / queue[queue_seek].sound->context->sample_rate;
-		int  rmsec = (queue[queue_seek].sound->context->frames / queue[queue_seek].sound->context->sample_rate) - elsec;
+		int  ttsec = queue[queue_seek].sound->context->frames / queue[queue_seek].sound->context->sample_rate;
 		char buf[64];
 
-		sprintf(buf, "%d:%02d", elsec / 60, elsec % 60);
-		MwVaApply(eltime,
-			  MwNtext, buf,
-			  NULL);
-
-		sprintf(buf, "%d:%02d", rmsec / 60, rmsec % 60);
-		MwVaApply(rmtime,
+		sprintf(buf, "%d:%02d | %d:%02d", elsec / 60, elsec % 60, ttsec / 60, ttsec % 60);
+		MwVaApply(timelabel,
 			  MwNtext, buf,
 			  NULL);
 
@@ -293,12 +363,12 @@ static void window_tick(MwWidget handle, void* user, void* client) {
 				  NULL);
 		}
 	} else {
-		MwVaApply(eltime,
-			  MwNtext, "0:00",
+		MwVaApply(timelabel,
+			  MwNtext, "",
 			  NULL);
-		MwVaApply(rmtime,
-			  MwNtext, "0:00",
-			  NULL);
+		memset(((MwLLCommonPixmap)pxalbum)->raw, 0, ALBUMWIDTH * ALBUMWIDTH * 4);
+		MwLLPixmapUpdate(pxalbum);
+		MwForceRender(album);
 	}
 	queue_last = queue_seek;
 	pthread_mutex_unlock(&audio_mutex);
@@ -362,7 +432,71 @@ static void bskipfwd_activate(MwWidget handle, void* user, void* client) {
 	pthread_mutex_unlock(&audio_mutex);
 }
 
+static void brepeat_activate(MwWidget handle, void* user, void* client) {
+	pthread_mutex_lock(&audio_mutex);
+	repeated = repeated ? 0 : 1;
+	MwVaApply(brepeat,
+		  MwNpixmap, repeated ? pxrepeatsong : pxrepeat,
+		  NULL);
+	pthread_mutex_unlock(&audio_mutex);
+}
+
+static void file_fc_chosen(MwWidget handle, void* user, void* client) {
+	db_add(client);
+	db_scan();
+}
+
+static void playlist_fc_chosen(MwWidget handle, void* user, void* client) {
+	playlist_add(client);
+}
+
+static void menu_menu(MwWidget handle, void* user, void* client) {
+	if(client == file_add_file) {
+		MwWidget fc = MwFileChooser(window, "Choose a file to add");
+		MwAddUserHandler(fc, MwNfileChosenHandler, file_fc_chosen, NULL);
+	} else if(client == file_add_playlist) {
+		MwWidget fc = MwFileChooser(window, "Choose a playlist to add");
+		MwAddUserHandler(fc, MwNfileChosenHandler, playlist_fc_chosen, NULL);
+	}
+}
+
+static void list_mouseup(MwWidget handle, void* user, void* client) {
+	MwLLMouse* m = client;
+	int	   s;
+	if(ui_last != play_queue) return;
+	if(m->button != MwLLMouseRight) return;
+	if((s = MwGetInteger(list, MwNvalue)) == -1) return;
+
+	pthread_mutex_lock(&audio_mutex);
+	MwListBoxDelete(list, s);
+	arrdel(queue, s - 1);
+	ui_set_play_queue(arrlen(queue));
+
+	if(queue_last == (s - 1)) {
+		queue_last = -1;
+	} else if(queue_last > (s - 1)) {
+		queue_last--;
+		queue_seek--;
+	}
+	if(arrlen(queue) <= queue_seek) {
+		queue_seek = arrlen(queue) - 1;
+	}
+	pthread_mutex_unlock(&audio_mutex);
+}
+
 void ui_init(void) {
+	MwMenu	  m;
+	int	  i;
+	MwWidget* l;
+
+	m		   = MwMenuAdd(menu, NULL, "File");
+	file_add_file	   = MwMenuAdd(menu, m, "Add File");
+	file_add_directory = MwMenuAdd(menu, m, "Add Directory");
+	file_add_playlist  = MwMenuAdd(menu, m, "Add Playlist");
+
+	m = MwMenuAdd(menu, NULL, "?Help");
+	MwMenuAdd(menu, m, "About");
+
 	ui_list_reset(NULL);
 	ui_tree_reset();
 
@@ -372,7 +506,14 @@ void ui_init(void) {
 	ui_set_artists(0);
 	ui_set_genres(0);
 
+	MwAddUserHandler(menu, MwNmenuHandler, menu_menu, NULL);
+
 	ui_last = all_music;
+	l	= MwGetChildren(list);
+	for(i = 0; l[i] != NULL; i++) {
+		if(MwGetClass(l[i]) == MwFrameClass) MwAddUserHandler(l[i], MwNmouseUpHandler, list_mouseup, NULL);
+	}
+	free(l);
 	MwAddUserHandler(list, MwNactivateHandler, list_activate, NULL);
 	MwAddUserHandler(tree, MwNactivateHandler, tree_activate, NULL);
 	MwAddUserHandler(window, MwNtickHandler, window_tick, NULL);
@@ -383,4 +524,6 @@ void ui_init(void) {
 	MwAddUserHandler(bpause, MwNactivateHandler, bpause_activate, NULL);
 	MwAddUserHandler(bstop, MwNactivateHandler, bstop_activate, NULL);
 	MwAddUserHandler(bskipfwd, MwNactivateHandler, bskipfwd_activate, NULL);
+
+	MwAddUserHandler(brepeat, MwNactivateHandler, brepeat_activate, NULL);
 }

@@ -37,14 +37,14 @@ typedef struct queue {
 } queue_t;
 
 /* main.c */
-extern MwWidget	      window;
-extern MwWidget	      album, info;
+extern MwWidget	      window, menu;
+extern MwWidget	      album, info, timelabel;
 extern MwWidget	      bskipback, bplay, bpause, bstop, bskipfwd, brepeat, bshuffle;
-extern MwWidget	      eltime, seekbar, rmtime;
+extern MwWidget	      seekbar;
 extern MwWidget	      tree, list;
 extern unsigned char* pxalbumdata;
-extern MwLLPixmap     pxalbum;
-extern MwLLPixmap pxoptical;
+extern MwLLPixmap     pxalbum, pxrepeat, pxrepeatsong;
+extern MwLLPixmap     pxoptical, pxfoldermusic, pxartist, pxgenre;
 
 /* db.c */
 extern numkv_t* db_musics;
@@ -52,10 +52,11 @@ extern numkv_t* db_albums;
 extern numkv_t* db_artists;
 extern numkv_t* db_genres;
 
-int  db_exec(const char* s);
-int  db_init(void);
-void db_add(const char* path);
-void db_scan(void);
+int    db_exec(const char* s);
+int    db_init(void);
+void   db_add(const char* path);
+void   db_scan(void);
+char** db_find(const char* query, const char* param, const char* additional);
 
 /* ui.c */
 extern void* ui_last;
@@ -74,11 +75,15 @@ extern pthread_mutex_t audio_mutex;
 extern queue_t*	       queue;
 extern int	       queue_seek;
 extern int	       paused;
+extern int	       repeated;
 
 void audio_init(void);
 void audio_queue(const char* path);
 
 /* id3.c */
 unsigned char* id3_findimage(const char* path, size_t* size);
+
+/* playlist.c */
+void playlist_add(const char* path);
 
 #endif

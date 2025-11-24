@@ -8,6 +8,7 @@ pthread_mutex_t audio_mutex;
 queue_t*	queue	   = NULL;
 int		queue_seek = -1;
 int		paused	   = 0;
+int		repeated   = 0;
 
 static void handler(MDEAudio handle, void* user, void* data, int frames) {
 	memset(data, 0, frames * 2 * 2);
@@ -35,9 +36,14 @@ static void handler(MDEAudio handle, void* user, void* data, int frames) {
 		free(to);
 
 		if(f < from_frames) {
-			queue_seek++;
-			if(queue_seek >= arrlen(queue)) {
-				queue_seek = -1;
+			if(repeated) {
+				queue[queue_seek].frames = 0;
+				MDESoundSeek(queue[queue_seek].sound, 0);
+			} else {
+				queue_seek++;
+				if(queue_seek >= arrlen(queue)) {
+					queue_seek = -1;
+				}
 			}
 		}
 	}
