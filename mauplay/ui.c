@@ -102,6 +102,7 @@ static void tree_activate(MwWidget handle, void* user, void* client) {
 				int  index = MwListBoxPacketInsert(p, -1);
 				sprintf(buf, "%d", i + 1);
 
+				MwListBoxPacketSetIcon(p, index, pxoptical);
 				MwListBoxPacketSet(p, index, 0, buf);
 				MwListBoxPacketSet(p, index, 1, db_musics[ind].title);
 				MwListBoxPacketSet(p, index, 2, db_musics[ind].artist);
@@ -118,6 +119,7 @@ static void tree_activate(MwWidget handle, void* user, void* client) {
 				int  index = MwListBoxPacketInsert(p, -1);
 				sprintf(buf, "%d", i + 1);
 
+				MwListBoxPacketSetIcon(p, index, pxoptical);
 				MwListBoxPacketSet(p, index, 0, buf);
 				MwListBoxPacketSet(p, index, 1, db_musics[i].title);
 				MwListBoxPacketSet(p, index, 2, db_musics[i].artist);
@@ -189,6 +191,10 @@ static void tree_activate(MwWidget handle, void* user, void* client) {
 static void list_activate(MwWidget handle, void* user, void* client) {
 	if(ui_last == play_queue) {
 		pthread_mutex_lock(&audio_mutex);
+		if(queue_seek != -1) {
+			queue[queue_seek].frames = 0;
+			MDESoundSeek(queue[queue_seek].sound, 0);
+		}
 		queue_seek		 = (*(int*)client) - 1;
 		queue[queue_seek].frames = 0;
 		MDESoundSeek(queue[queue_seek].sound, 0);
@@ -225,12 +231,16 @@ static void window_tick(MwWidget handle, void* user, void* client) {
 					}
 				}
 				free(data);
+			} else {
+				memset(((MwLLCommonPixmap)pxalbum)->raw, 0, ALBUMWIDTH * ALBUMWIDTH * 4);
 			}
 
-			MwLLPixmapUpdate(pxalbum);
-			MwForceRender(album);
 			free(img);
+		} else {
+			memset(((MwLLCommonPixmap)pxalbum)->raw, 0, ALBUMWIDTH * ALBUMWIDTH * 4);
 		}
+		MwLLPixmapUpdate(pxalbum);
+		MwForceRender(album);
 
 		if(ui_last == play_queue) {
 			pthread_mutex_unlock(&audio_mutex);

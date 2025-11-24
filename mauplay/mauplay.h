@@ -44,6 +44,7 @@ extern MwWidget	      eltime, seekbar, rmtime;
 extern MwWidget	      tree, list;
 extern unsigned char* pxalbumdata;
 extern MwLLPixmap     pxalbum;
+extern MwLLPixmap pxoptical;
 
 /* db.c */
 extern numkv_t* db_musics;

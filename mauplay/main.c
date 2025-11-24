@@ -15,6 +15,7 @@ MwWidget       mainsep;
 MwWidget       eltime, seekbar, rmtime;
 MwWidget       tree, list;
 MwLLPixmap     pxalbum, pxskipback, pxplay, pxpause, pxstop, pxskipfwd, pxrepeat, pxshuffle;
+MwLLPixmap pxoptical;
 unsigned char* pxalbumdata;
 
 static void resize(MwWidget handle, void* user, void* client) {
@@ -116,21 +117,21 @@ static void resize(MwWidget handle, void* user, void* client) {
 	MwVaApply(eltime,
 		  MwNx, 5,
 		  MwNy, y + 5 + 32 + 10,
-		  MwNwidth, MwTextWidth(window, "00:00"), /* please, never put 1 hour music */
+		  MwNwidth, MwTextWidth(window, "000:00"),
 		  MwNheight, 16,
 		  NULL);
 
 	MwVaApply(seekbar,
-		  MwNx, 5 + MwTextWidth(window, "00:00") + 5,
+		  MwNx, 5 + MwTextWidth(window, "000:00") + 5,
 		  MwNy, y + 5 + 32 + 10,
-		  MwNwidth, ww - (5 + MwTextWidth(window, "00:00") + 5) * 2,
+		  MwNwidth, ww - (5 + MwTextWidth(window, "000:00") + 5) * 2,
 		  MwNheight, 16,
 		  NULL);
 
 	MwVaApply(rmtime,
-		  MwNx, ww - 5 - MwTextWidth(window, "00:00"),
+		  MwNx, ww - 5 - MwTextWidth(window, "000:00"),
 		  MwNy, y + 5 + 32 + 10,
-		  MwNwidth, MwTextWidth(window, "00:00"),
+		  MwNwidth, MwTextWidth(window, "000:00"),
 		  MwNheight, 16,
 		  NULL);
 
@@ -156,7 +157,7 @@ int main() {
 
 	MwLibraryInit();
 
-	window	  = MwVaCreateWidget(MwWindowClass, "main", NULL, MwDEFAULT, MwDEFAULT, 640, 400,
+	window	  = MwVaCreateWidget(MwWindowClass, "main", NULL, MwDEFAULT, MwDEFAULT, 600, 400,
 				     MwNtitle, "mauplay",
 				     NULL);
 	menu	  = MwCreateWidget(MwMenuClass, "menu", window, 0, 0, 0, 0);
@@ -202,7 +203,7 @@ int main() {
 				     NULL);
 	eltime	  = MwVaCreateWidget(MwLabelClass, "eltime", window, 0, 0, 0, 0,
 				     MwNalignment, MwALIGNMENT_END,
-				     MwNtext, "0:00",
+				     MwNtext, "000:00",
 				     NULL);
 	seekbar	  = MwVaCreateWidget(MwScrollBarClass, "seekbar", window, 0, 0, 0, 0,
 				     MwNorientation, MwHORIZONTAL,
@@ -211,7 +212,7 @@ int main() {
 				     NULL);
 	rmtime	  = MwVaCreateWidget(MwLabelClass, "rmtime", window, 0, 0, 0, 0,
 				     MwNalignment, MwALIGNMENT_END,
-				     MwNtext, "0:00",
+				     MwNtext, "000:00",
 				     NULL);
 	tree	  = MwCreateWidget(MwTreeViewClass, "tree", window, 0, 0, 0, 0);
 	list	  = MwVaCreateWidget(MwListBoxClass, "list", window, 0, 0, 0, 0,
@@ -234,6 +235,8 @@ int main() {
 	pxrepeat  = MwLoadXPM(window, repeat_xpm);
 	pxshuffle = MwLoadXPM(window, shuffle_xpm);
 
+	pxoptical = MwLoadImage(window, ICON128DIR "/optical.png");
+
 	MwSetVoid(album, MwNpixmap, pxalbum);
 
 	MwSetVoid(bskipback, MwNpixmap, pxskipback);
@@ -251,7 +254,6 @@ int main() {
 
 	ui_init();
 
-	db_add("test2.mp3");
 	db_scan();
 
 	audio_init();
