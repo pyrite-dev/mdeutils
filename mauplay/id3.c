@@ -5,6 +5,7 @@ unsigned char* id3_findimage(const char* path, size_t* size) {
 	unsigned char* buffer = MDEID3GetTag(path, "APIC", &fsz);
 	unsigned char* d = NULL;
 	int	       i;
+	if(buffer == NULL) return NULL;
 	for(i = 1; i < fsz; i++) {
 		if(buffer[i] == 0) break;
 	}
