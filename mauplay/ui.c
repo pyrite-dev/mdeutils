@@ -1,6 +1,7 @@
 #include "mauplay.h"
 
 #include <stb_ds.h>
+#include <stb_image.h>
 
 static void* play_queue;
 static void* all_music;
@@ -204,6 +205,32 @@ static void window_tick(MwWidget handle, void* user, void* client) {
 	if(queue_last != queue_seek && queue_seek != -1) {
 		int   ind;
 		char* buf;
+		size_t sz;
+		unsigned char* img;
+
+		img = id3_findimage(queue[queue_seek].path, &sz);
+		if(img != NULL){
+			int iw, ih, ic;
+			unsigned char* data = stbi_load_from_memory(img, sz, &iw, &ih, &ic, 4);
+			if(data != NULL){
+				int y, x;
+				for(y = 0; y < ALBUMWIDTH; y++){
+					for(x = 0; x < ALBUMWIDTH; x++){
+						int ix = x * iw / ALBUMWIDTH;
+						int iy = y * ih / ALBUMWIDTH;
+						unsigned char* ipx = &data[(iy * iw + ix) * 4];
+						unsigned char* opx = &((MwLLCommonPixmap)pxalbum)->raw[(y * ALBUMWIDTH + x) * 4];
+
+						memcpy(opx, ipx, 4);
+					}
+				}
+				free(data);
+			}
+
+			MwLLPixmapUpdate(pxalbum);
+			MwForceRender(album);
+			free(img);
+		}
 
 		if(ui_last == play_queue) {
 			pthread_mutex_unlock(&audio_mutex);

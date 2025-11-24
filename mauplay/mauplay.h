@@ -17,6 +17,8 @@
 #include <string.h>
 #include <pthread.h>
 
+#define ALBUMWIDTH 128
+
 typedef struct numkv {
 	char* key;
 	int   value;
@@ -40,6 +42,7 @@ extern MwWidget	  album, info;
 extern MwWidget	  bskipback, bplay, bpause, bstop, bskipfwd, brepeat, bshuffle;
 extern MwWidget	  eltime, seekbar, rmtime;
 extern MwWidget	  tree, list;
+extern unsigned char* pxalbumdata;
 extern MwLLPixmap pxalbum;
 
 /* db.c */

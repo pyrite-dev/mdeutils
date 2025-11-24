@@ -219,10 +219,10 @@ int main() {
 				     MwNleftPadding, 16,
 				     NULL);
 
-	pxalbumdata = malloc(128 * 128 * 4);
-	memset(pxalbumdata, 0, 128 * 128 * 4);
+	pxalbumdata = malloc(ALBUMWIDTH * ALBUMWIDTH * 4);
+	memset(pxalbumdata, 0, ALBUMWIDTH * ALBUMWIDTH * 4);
 
-	pxalbum	   = MwLoadRaw(window, pxalbumdata, 128, 128);
+	pxalbum	   = MwLoadRaw(window, pxalbumdata, ALBUMWIDTH, ALBUMWIDTH);
 	pxskipback = MwLoadXPM(window, skipback_xpm);
 	pxplay	   = MwLoadXPM(window, play_xpm);
 	pxpause	   = MwLoadXPM(window, pause_xpm);
