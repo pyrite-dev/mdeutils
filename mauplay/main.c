@@ -244,6 +244,8 @@ int main() {
 
 	MwSetVoid(album, MwNpixmap, pxalbum);
 
+	MwVaApply(window, MwNiconPixmap, pxradio, NULL);
+
 	MwSetVoid(bskipback, MwNpixmap, pxskipback);
 	MwSetVoid(bplay, MwNpixmap, pxplay);
 	MwSetVoid(bpause, MwNpixmap, pxpause);
