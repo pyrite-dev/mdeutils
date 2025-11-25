@@ -105,7 +105,7 @@ static void   tree_activate(MwWidget handle, void* user, void* client) {
 		  if(current != NULL) free(current);
 		  current = NULL;
 		  if(client == play_queue) {
-			  pthread_mutex_lock(&audio_mutex);
+			  MDEMutexLock(audio_mutex);
 			  for(i = 0; i < arrlen(queue); i++) {
 				  char buf[64];
 				  int  ind   = shgeti(db_musics, queue[i].path);
@@ -121,7 +121,7 @@ static void   tree_activate(MwWidget handle, void* user, void* client) {
 
 				  MwListBoxPacketSet(p, index, 3, buf);
 			  }
-			  pthread_mutex_unlock(&audio_mutex);
+			  MDEMutexUnlock(audio_mutex);
 		  }
 		  if(client == all_music) {
 			  for(i = 0; i < shlen(db_musics); i++) {
@@ -203,7 +203,7 @@ static void   tree_activate(MwWidget handle, void* user, void* client) {
 
 static void list_activate(MwWidget handle, void* user, void* client) {
 	if(ui_last == play_queue) {
-		pthread_mutex_lock(&audio_mutex);
+		MDEMutexLock(audio_mutex);
 		if(queue_seek != -1) {
 			queue[queue_seek].frames = 0;
 			MDESoundSeek(queue[queue_seek].sound, 0);
@@ -211,7 +211,7 @@ static void list_activate(MwWidget handle, void* user, void* client) {
 		queue_seek		 = (*(int*)client) - 1;
 		queue[queue_seek].frames = 0;
 		MDESoundSeek(queue[queue_seek].sound, 0);
-		pthread_mutex_unlock(&audio_mutex);
+		MDEMutexUnlock(audio_mutex);
 	} else if(ui_last == all_music) {
 		audio_queue(db_musics[(*(int*)client) - 1].key);
 	} else if(ui_last == albums || ui_last == artists || ui_last == genres) {
@@ -284,7 +284,7 @@ static void list_activate(MwWidget handle, void* user, void* client) {
 int queue_last = -1;
 
 static void window_tick(MwWidget handle, void* user, void* client) {
-	pthread_mutex_lock(&audio_mutex);
+	MDEMutexLock(audio_mutex);
 	if(queue_last != queue_seek && queue_seek != -1) {
 		int	       ind;
 		char*	       buf;
@@ -320,12 +320,13 @@ static void window_tick(MwWidget handle, void* user, void* client) {
 		MwForceRender(album);
 
 		if(ui_last == play_queue) {
-			pthread_mutex_unlock(&audio_mutex);
+			MDEMutexUnlock(audio_mutex);
 			MwDispatchUserHandler(tree, MwNactivateHandler, ui_last);
-			pthread_mutex_lock(&audio_mutex);
+			MDEMutexLock(audio_mutex);
 		}
 
 		ind = shgeti(db_musics, queue[queue_seek].path);
+
 		buf = malloc(strlen(db_musics[ind].title) + 1 + strlen(db_musics[ind].artist) + 1);
 
 		buf[0] = 0;
@@ -373,7 +374,7 @@ static void window_tick(MwWidget handle, void* user, void* client) {
 		MwForceRender(album);
 	}
 	queue_last = queue_seek;
-	pthread_mutex_unlock(&audio_mutex);
+	MDEMutexUnlock(audio_mutex);
 }
 
 static void seekbar_changed(MwWidget handle, void* user, void* client) {
@@ -381,7 +382,7 @@ static void seekbar_changed(MwWidget handle, void* user, void* client) {
 }
 
 static void bskipback_activate(MwWidget handle, void* user, void* client) {
-	pthread_mutex_lock(&audio_mutex);
+	MDEMutexLock(audio_mutex);
 	if(queue_seek == -1) {
 		queue_seek = 0;
 	} else {
@@ -393,33 +394,33 @@ static void bskipback_activate(MwWidget handle, void* user, void* client) {
 	} else {
 		queue_seek = -1;
 	}
-	pthread_mutex_unlock(&audio_mutex);
+	MDEMutexUnlock(audio_mutex);
 }
 
 static void bplay_activate(MwWidget handle, void* user, void* client) {
-	pthread_mutex_lock(&audio_mutex);
+	MDEMutexLock(audio_mutex);
 	paused = 0;
-	pthread_mutex_unlock(&audio_mutex);
+	MDEMutexUnlock(audio_mutex);
 }
 
 static void bpause_activate(MwWidget handle, void* user, void* client) {
-	pthread_mutex_lock(&audio_mutex);
+	MDEMutexLock(audio_mutex);
 	paused = 1;
-	pthread_mutex_unlock(&audio_mutex);
+	MDEMutexUnlock(audio_mutex);
 }
 
 static void bstop_activate(MwWidget handle, void* user, void* client) {
-	pthread_mutex_lock(&audio_mutex);
+	MDEMutexLock(audio_mutex);
 	if(queue_seek != -1) {
 		queue[queue_seek].frames = 0;
 		MDESoundSeek(queue[queue_seek].sound, 0);
 	}
 	queue_seek = -1;
-	pthread_mutex_unlock(&audio_mutex);
+	MDEMutexUnlock(audio_mutex);
 }
 
 static void bskipfwd_activate(MwWidget handle, void* user, void* client) {
-	pthread_mutex_lock(&audio_mutex);
+	MDEMutexLock(audio_mutex);
 	if(queue_seek == -1) {
 		queue_seek = 0;
 	} else {
@@ -431,16 +432,16 @@ static void bskipfwd_activate(MwWidget handle, void* user, void* client) {
 	} else {
 		queue_seek = -1;
 	}
-	pthread_mutex_unlock(&audio_mutex);
+	MDEMutexUnlock(audio_mutex);
 }
 
 static void brepeat_activate(MwWidget handle, void* user, void* client) {
-	pthread_mutex_lock(&audio_mutex);
+	MDEMutexLock(audio_mutex);
 	repeated = repeated ? 0 : 1;
 	MwVaApply(brepeat,
 		  MwNpixmap, repeated ? pxrepeatsong : pxrepeat,
 		  NULL);
-	pthread_mutex_unlock(&audio_mutex);
+	MDEMutexUnlock(audio_mutex);
 }
 
 static void file_fc_chosen(MwWidget handle, void* user, void* client) {
@@ -459,7 +460,7 @@ static void menu_menu(MwWidget handle, void* user, void* client) {
 	} else if(client == file_add_playlist) {
 		MwWidget fc = MwFileChooser(window, "Choose a playlist to add");
 		MwAddUserHandler(fc, MwNfileChosenHandler, playlist_fc_chosen, NULL);
-	}else if(client == help_about){
+	} else if(client == help_about) {
 		MDEAboutDialog(window, "mauplay", VERSION, pxradio);
 	}
 }
@@ -471,7 +472,7 @@ static void list_mouseup(MwWidget handle, void* user, void* client) {
 	if(m->button != MwLLMouseRight) return;
 	if((s = MwGetInteger(list, MwNvalue)) == -1) return;
 
-	pthread_mutex_lock(&audio_mutex);
+	MDEMutexLock(audio_mutex);
 	MwListBoxDelete(list, s);
 	arrdel(queue, s - 1);
 	ui_set_play_queue(arrlen(queue));
@@ -485,7 +486,7 @@ static void list_mouseup(MwWidget handle, void* user, void* client) {
 	if(arrlen(queue) <= queue_seek) {
 		queue_seek = arrlen(queue) - 1;
 	}
-	pthread_mutex_unlock(&audio_mutex);
+	MDEMutexUnlock(audio_mutex);
 }
 
 void ui_init(void) {
@@ -498,7 +499,7 @@ void ui_init(void) {
 	file_add_directory = MwMenuAdd(menu, m, "Add Directory");
 	file_add_playlist  = MwMenuAdd(menu, m, "Add Playlist");
 
-	m = MwMenuAdd(menu, NULL, "?Help");
+	m	   = MwMenuAdd(menu, NULL, "?Help");
 	help_about = MwMenuAdd(menu, m, "About");
 
 	ui_list_reset(NULL);

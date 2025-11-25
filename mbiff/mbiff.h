@@ -11,8 +11,6 @@
 
 /* Standard */
 #include <sys/stat.h>
-#include <unistd.h>
-#include <pwd.h>
 #include <stdlib.h>
 #include <string.h>
 

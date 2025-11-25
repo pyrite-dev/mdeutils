@@ -12,12 +12,9 @@
 /* External */
 
 /* Standard */
-#include <sys/stat.h>
-#include <pwd.h>
-#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
-#include <pthread.h>
+#include <sys/stat.h>
 
 #define ALBUMWIDTH 128
 
@@ -73,11 +70,11 @@ void ui_set_artists(int v);
 void ui_set_genres(int v);
 
 /* audio.c */
-extern pthread_mutex_t audio_mutex;
-extern queue_t*	       queue;
-extern int	       queue_seek;
-extern int	       paused;
-extern int	       repeated;
+extern MDEMutex audio_mutex;
+extern queue_t* queue;
+extern int	queue_seek;
+extern int	paused;
+extern int	repeated;
 
 void audio_init(void);
 void audio_queue(const char* path);

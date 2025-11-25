@@ -29,13 +29,14 @@ int db_exec(const char* s) {
 }
 
 int db_init(void) {
-	struct passwd* pwd = getpwuid(getuid());
-	char*	       dir = malloc(strlen(pwd->pw_dir) + 1 + strlen(".config/mauplay") + 1);
-	char*	       path;
-	int	       st = 0;
+	char* conf = MDEDirectoryConfigPath();
+	char* dir  = malloc(strlen(conf) + 8 + 1);
+	char* path;
+	int   st = 0;
 
-	strcpy(dir, pwd->pw_dir);
-	strcat(dir, "/.config/mauplay");
+	strcpy(dir, conf);
+	strcat(dir, "/mauplay");
+	free(conf);
 
 	MDEDirectoryCreate(dir, 0755);
 

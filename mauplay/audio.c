@@ -4,7 +4,7 @@
 #include <stb_ds.h>
 
 static MDEAudio audio;
-pthread_mutex_t audio_mutex;
+MDEMutex	audio_mutex;
 queue_t*	queue	   = NULL;
 int		queue_seek = -1;
 int		paused	   = 0;
@@ -13,7 +13,7 @@ int		repeated   = 0;
 static void handler(MDEAudio handle, void* user, void* data, int frames) {
 	memset(data, 0, frames * 2 * 2);
 
-	pthread_mutex_lock(&audio_mutex);
+	MDEMutexLock(audio_mutex);
 	if(queue_seek != -1 && !paused) {
 		int	 from_frames = frames * queue[queue_seek].sound->context->sample_rate / MDEAudioRate;
 		float*	 from	     = malloc(from_frames * sizeof(*from) * 2);
@@ -47,13 +47,13 @@ static void handler(MDEAudio handle, void* user, void* data, int frames) {
 			}
 		}
 	}
-	pthread_mutex_unlock(&audio_mutex);
+	MDEMutexUnlock(audio_mutex);
 }
 
 void audio_init(void) {
 	audio = MDEAudioOpen(handler, NULL);
 
-	pthread_mutex_init(&audio_mutex, NULL);
+	audio_mutex = MDEMutexCreate();
 
 	MDEAudioStart(audio);
 }
@@ -64,10 +64,10 @@ void audio_queue(const char* path) {
 	q.sound	 = MDESoundOpen(q.path);
 	q.frames = 0;
 
-	pthread_mutex_lock(&audio_mutex);
+	MDEMutexLock(audio_mutex);
 	arrput(queue, q);
 	if(queue_seek == -1) queue_seek = arrlen(queue) - 1;
 
 	ui_set_play_queue(arrlen(queue));
-	pthread_mutex_unlock(&audio_mutex);
+	MDEMutexUnlock(audio_mutex);
 }
