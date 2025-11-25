@@ -11,3 +11,11 @@ target_link_libraries(
 	PRIVATE
 	MDEAudio MDESound
 )
+
+if(NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
+	target_link_libraries(
+		mauplay
+		PRIVATE
+		m
+	)
+endif()
