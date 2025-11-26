@@ -148,7 +148,6 @@ static void   tree_activate(MwWidget handle, void* user, void* client) {
 				  MwListBoxPacketSetIcon(p, index, pxfoldermusic);
 				  MwListBoxPacketSet(p, index, 0, buf);
 				  MwListBoxPacketSet(p, index, 1, db_albums[i].key);
-
 				  sprintf(buf, "%d:%02d", db_albums[i].length / 60, db_albums[i].length % 60);
 
 				  MwListBoxPacketSet(p, index, 2, buf);

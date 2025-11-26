@@ -262,6 +262,7 @@ int main() {
 	ui_init();
 
 	db_scan();
+	db_scan();
 
 	audio_init();
 

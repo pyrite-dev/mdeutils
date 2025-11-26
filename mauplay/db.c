@@ -145,7 +145,7 @@ void db_scan(void) {
 	shdefault(db_artists, 0);
 	shdefault(db_genres, 0);
 
-	if(sqlite3_prepare_v2(db, "SELECT * FROM cache", -1, &stmt, NULL) != SQLITE_OK) {
+	if(sqlite3_prepare_v2(db, "SELECT * FROM cache ORDER BY title ASC", -1, &stmt, NULL) != SQLITE_OK) {
 		return;
 	}
 
@@ -157,6 +157,7 @@ void db_scan(void) {
 		char* s_genre  = MDEStringDuplicate(sqlite3_column_text(stmt, 4));
 		int   s_length = sqlite3_column_int(stmt, 5);
 		int   ind;
+		int   incr;
 
 		shput(db_musics, s_path, 0);
 		ind		      = shgeti(db_musics, s_path);
@@ -166,7 +167,8 @@ void db_scan(void) {
 		db_musics[ind].genre  = s_genre;
 		db_musics[ind].length = s_length;
 
-		shput(db_albums, s_album, shget(db_albums, s_album) + 1);
+		incr = shget(db_albums, s_album) + 1;
+		shput(db_albums, s_album, incr);
 		ind = shgeti(db_albums, s_album);
 		if(shget(db_albums, s_album) == 1) {
 			db_albums[ind].length = s_length;
@@ -174,7 +176,8 @@ void db_scan(void) {
 			db_albums[ind].length += s_length;
 		}
 
-		shput(db_artists, s_artist, shget(db_artists, s_artist) + 1);
+		incr = shget(db_artists, s_artist) + 1;
+		shput(db_artists, s_artist, incr);
 		ind = shgeti(db_artists, s_artist);
 		if(shget(db_artists, s_artist) == 1) {
 			db_artists[ind].length = s_length;
@@ -182,7 +185,8 @@ void db_scan(void) {
 			db_artists[ind].length += s_length;
 		}
 
-		shput(db_genres, s_genre, shget(db_genres, s_genre) + 1);
+		incr = shget(db_genres, s_genre) + 1;
+		shput(db_genres, s_genre, incr);
 		ind = shgeti(db_genres, s_genre);
 		if(shget(db_genres, s_genre) == 1) {
 			db_genres[ind].length = s_length;
