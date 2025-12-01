@@ -3,11 +3,56 @@
 #include <stb_ds.h>
 
 static void* help_about;
+static void* file_open_a_file;
+static void* file_open_a_directory;
 int	     current = 0;
+
+static void file_fc_chosen(MwWidget handle, void* user, void* client) {
+	int i;
+
+	for(i = 0; i < arrlen(images); i++) {
+		free(images[i].path);
+		if(images[i].data != NULL) free(images[i].data);
+	}
+	arrfree(images);
+
+	current = 0;
+	image_add(client);
+	image_init();
+	image_render();
+}
+
+static void file_dc_scan(const char* path, int dir, int symlink, void* uesr) {
+	if(dir) return;
+
+	image_add(path);
+}
+
+static void file_dc_chosen(MwWidget handle, void* user, void* client) {
+	int i;
+
+	for(i = 0; i < arrlen(images); i++) {
+		free(images[i].path);
+		if(images[i].data != NULL) free(images[i].data);
+	}
+	arrfree(images);
+
+	MDEDirectoryScan(client, file_dc_scan, NULL);
+
+	current = 0;
+	image_init();
+	image_render();
+}
 
 static void menu_menu(MwWidget handle, void* user, void* client) {
 	if(client == help_about) {
 		MDEAboutDialog(window, "mimview", VERSION, pxprojector);
+	} else if(client == file_open_a_file) {
+		MwWidget fc = MwFileChooser(window, "Open a file");
+		MwAddUserHandler(fc, MwNfileChosenHandler, file_fc_chosen, NULL);
+	} else if(client == file_open_a_directory) {
+		MwWidget dc = MwDirectoryChooser(window, "Open a directory");
+		MwAddUserHandler(dc, MwNdirectoryChosenHandler, file_dc_chosen, NULL);
 	}
 }
 
@@ -50,6 +95,10 @@ static void bzoomout_activate(MwWidget handle, void* user, void* client) {
 
 void ui_init(void) {
 	void* m;
+
+	m		      = MwMenuAdd(menu, NULL, "File");
+	file_open_a_file      = MwMenuAdd(menu, m, "Open a file");
+	file_open_a_directory = MwMenuAdd(menu, m, "Open a directory");
 
 	m	   = MwMenuAdd(menu, NULL, "?Help");
 	help_about = MwMenuAdd(menu, m, "About");
