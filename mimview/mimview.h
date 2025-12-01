@@ -16,11 +16,29 @@
 #include <stdlib.h>
 #include <string.h>
 
+typedef struct image {
+	char*	       path;
+	unsigned char* data;
+	int	       width;
+	int	       height;
+	int	       x;
+	int	       y;
+	double	       scale;
+} image_t;
+
 /* main.c */
-extern MwWidget	  window, menu;
-extern MwLLPixmap pxprojector;
+extern MwWidget	  window, menu, image;
+extern MwLLPixmap pxprojector, pxdata;
+extern MwWidget	  bprev, bnext, bzoomin, bzoomout;
 
 /* ui.c */
-void ui_init(void);
+extern int current;
+void	   ui_init(void);
+
+/* image.c */
+extern image_t* images;
+void		image_init(void);
+void		image_add(const char* path);
+void		image_render(void);
 
 #endif

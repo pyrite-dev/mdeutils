@@ -1,12 +1,15 @@
 #include "mimview.h"
 
+#include <stb_ds.h>
+
 #define ButtonWidth 32
 #define ButtonHeight 24
 
 MwWidget	  window, menu, image;
+MwWidget	  bprev, bnext, bzoomin, bzoomout;
 MwLLPixmap	  pxprojector, pxdata = NULL;
 static MwLLPixmap pxprev, pxnext, pxzoomin, pxzoomout;
-static MwWidget	  bprev, bnext, sep, bzoomin, bzoomout;
+static MwWidget	  sep;
 
 static void resize(MwWidget handle, void* user, void* client) {
 	int	       y  = MwGetInteger(menu, MwNheight);
@@ -18,17 +21,18 @@ static void resize(MwWidget handle, void* user, void* client) {
 
 	if(pxdata != NULL) MwLLDestroyPixmap(pxdata);
 	iw   = ww - 10;
-	ih   = wh - 5 - ButtonHeight - 5;
+	ih   = wh - 5 - 5 - ButtonHeight - 5;
 	data = malloc(iw * ih * 4);
 	memset(data, 0, iw * ih * 4);
 	pxdata = MwLoadRaw(window, data, iw, ih);
 	free(data);
+	image_init();
 	MwVaApply(image,
 		  MwNpixmap, pxdata,
 		  MwNx, 5,
 		  MwNy, y + 5,
 		  MwNwidth, ww - 10,
-		  MwNheight, wh - 5 - ButtonHeight - 5,
+		  MwNheight, wh - 5 - 5 - ButtonHeight - 5,
 		  NULL);
 
 	bx = (ww - 10 - (ButtonWidth * 2 + 5) * 2) / 2;
@@ -62,13 +66,18 @@ static void resize(MwWidget handle, void* user, void* client) {
 		  MwNwidth, ButtonWidth,
 		  MwNheight, ButtonHeight,
 		  NULL);
+
+	if(current < arrlen(images)) {
+		image_render();
+	}
 }
 
 int main(int argc, char** argv) {
 	int pad;
+	int i;
 	MwLibraryInit();
 
-	window	 = MwVaCreateWidget(MwWindowClass, "main", NULL, MwDEFAULT, MwDEFAULT, 320, 240,
+	window	 = MwVaCreateWidget(MwWindowClass, "main", NULL, MwDEFAULT, MwDEFAULT, 320, 320,
 				    MwNtitle, "mimview",
 				    NULL);
 	menu	 = MwCreateWidget(MwMenuClass, "menu", window, 0, 0, 0, 0);
@@ -100,20 +109,26 @@ int main(int argc, char** argv) {
 		  NULL);
 
 	MwVaApply(bzoomin,
-		  MwNpixmap, pxzoomout,
+		  MwNpixmap, pxzoomin,
 		  MwNpadding, pad,
 		  NULL);
 
 	MwVaApply(bzoomout,
-		  MwNpixmap, pxzoomin,
+		  MwNpixmap, pxzoomout,
 		  MwNpadding, pad,
 		  NULL);
 
 	MwAddUserHandler(window, MwNresizeHandler, resize, NULL);
 
-	ui_init();
-
 	resize(window, NULL, NULL);
+
+	for(i = 1; i < argc; i++) {
+		image_add(argv[i]);
+	}
+
+	image_render();
+
+	ui_init();
 
 	MwLoop(window);
 }
