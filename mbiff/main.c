@@ -3,14 +3,14 @@
 #include "mailempty.xpm"
 #include "mailfull.xpm"
 
-MwWidget     window, menu, image, mail;
+MwWidget     window, image, mail;
 MwLLPixmap   empty, full;
 static int   waiting = 0;
 static void* help_about;
 
 static void resize(MwWidget handle, void* user, void* client) {
 	int w  = MwGetInteger(handle, MwNwidth);
-	int h  = MwGetInteger(handle, MwNheight) - MwGetInteger(menu, MwNheight);
+	int h  = MwGetInteger(handle, MwNheight);
 	int iw = w < h ? w : h;
 
 	(void)user;
@@ -18,7 +18,7 @@ static void resize(MwWidget handle, void* user, void* client) {
 
 	MwVaApply(image,
 		  MwNx, (w - iw) / 2,
-		  MwNy, MwGetInteger(menu, MwNheight) + (h - iw) / 2,
+		  MwNy, (h - iw) / 2,
 		  MwNwidth, iw,
 		  MwNheight, iw,
 		  NULL);
@@ -47,12 +47,6 @@ static void mouseUp(MwWidget handle, void* user, void* client) {
 		  NULL);
 }
 
-static void menu_menu(MwWidget handle, void* user, void* client) {
-	if(client == help_about) {
-		MDEAboutDialog(window, "mbiff", VERSION, mail);
-	}
-}
-
 int main() {
 	void* m;
 
@@ -63,11 +57,6 @@ int main() {
 	window = MwVaCreateWidget(MwWindowClass, "main", NULL, MwDEFAULT, MwDEFAULT, 128, 128,
 				  MwNtitle, "mbiff",
 				  NULL);
-
-	menu = MwCreateWidget(MwMenuClass, "menu", window, 0, 0, 0, 0);
-
-	m	   = MwMenuAdd(menu, NULL, "?Help");
-	help_about = MwMenuAdd(menu, m, "About");
 
 	empty = MwLoadImage(window, ICON128DIR "/mailempty.png");
 	full  = MwLoadImage(window, ICON128DIR "/mailfull.png");
@@ -84,7 +73,6 @@ int main() {
 
 	resize(window, NULL, NULL);
 
-	MwAddUserHandler(menu, MwNmenuHandler, menu_menu, NULL);
 	MwAddUserHandler(image, MwNmouseUpHandler, mouseUp, NULL);
 	MwAddUserHandler(window, MwNtickHandler, tick, NULL);
 	MwAddUserHandler(window, MwNresizeHandler, resize, NULL);
