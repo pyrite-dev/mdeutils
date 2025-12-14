@@ -56,10 +56,38 @@ void image_render(void) {
 	again:;
 		d = stbi_load(images[current].path, &w, &h, &ch, 4);
 		if(d != NULL) {
-			int    pw = ((MwLLCommonPixmap)pxdata)->width;
-			int    ph = ((MwLLCommonPixmap)pxdata)->height;
-			double sw = (double)w / pw;
-			double sh = (double)h / ph;
+			int    dw, dh;
+			int    pw, ph;
+			double sw, sh;
+			MwRect rc;
+
+			MwGetScreenSize(window, &rc);
+
+			pw = ((MwLLCommonPixmap)pxdata)->width;
+			ph = ((MwLLCommonPixmap)pxdata)->height;
+
+			dw = MwGetInteger(window, MwNwidth) - pw;
+			dh = MwGetInteger(window, MwNheight) - ph;
+
+			/* this way is kinda terrible... but it kinda works */
+			if((rc.width - dw - 32) > w && (rc.height - dh - 32) > h) {
+				pw = w;
+				ph = h;
+				MwVaApply(window,
+					  MwNwidth, pw + dw,
+					  MwNheight, ph + dh,
+					  NULL);
+			} else {
+				pw = rc.width - 32 - dw;
+				ph = rc.height - 32 - dh;
+				MwVaApply(window,
+					  MwNwidth, pw + dw,
+					  MwNheight, ph + dh,
+					  NULL);
+			}
+
+			sw = (double)w / pw;
+			sh = (double)h / ph;
 
 			images[current].data   = d;
 			images[current].width  = w;
