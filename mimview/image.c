@@ -8,15 +8,17 @@ static int	      oldw = 0, oldh = 0;
 static unsigned char* buffer = NULL;
 
 void image_init(void) {
-	unsigned char* d = ((MwLLCommonPixmap)pxdata)->raw;
-	int	       w = ((MwLLCommonPixmap)pxdata)->width;
-	int	       h = ((MwLLCommonPixmap)pxdata)->height;
-	if(oldw != w || oldh != h) {
+	unsigned char* d = MwPixmapGetRaw(pxdata);
+	MwRect	       rc;
+
+	MwPixmapGetSize(pxdata, &rc);
+
+	if(oldw != rc.width || oldh != rc.height) {
 		int y, x;
 		if(buffer != NULL) free(buffer);
-		for(y = 0; y < h; y++) {
-			for(x = 0; x < w; x++) {
-				unsigned char* px = &d[(y * w + x) * 4];
+		for(y = 0; y < rc.height; y++) {
+			for(x = 0; x < rc.width; x++) {
+				unsigned char* px = &d[(y * rc.width + x) * 4];
 				if(((y / 16) + (x / 16)) % 2) {
 					px[0] = px[1] = px[2] = 128;
 				} else {
@@ -25,13 +27,13 @@ void image_init(void) {
 				px[3] = 255;
 			}
 		}
-		buffer = malloc(w * h * 4);
-		memcpy(buffer, d, w * h * 4);
+		buffer = malloc(rc.width * rc.height * 4);
+		memcpy(buffer, d, rc.width * rc.height * 4);
 	} else {
-		memcpy(d, buffer, w * h * 4);
+		memcpy(d, buffer, rc.width * rc.height * 4);
 	}
-	oldw = w;
-	oldh = h;
+	oldw = rc.width;
+	oldh = rc.height;
 
 	MwLLPixmapUpdate(pxdata);
 	MwForceRender(image);
@@ -61,10 +63,12 @@ void image_render(void) {
 			double sw, sh;
 			MwRect rc;
 
-			MwGetScreenSize(window, &rc);
+			MwPixmapGetSize(pxdata, &rc);
 
-			pw = ((MwLLCommonPixmap)pxdata)->width;
-			ph = ((MwLLCommonPixmap)pxdata)->height;
+			pw = rc.width;
+			ph = rc.height;
+
+			MwGetScreenSize(window, &rc);
 
 			dw = MwGetInteger(window, MwNwidth) - pw;
 			dh = MwGetInteger(window, MwNheight) - ph;
@@ -104,14 +108,17 @@ void image_render(void) {
 	}
 
 	if(current < arrlen(images)) {
-		unsigned char* d = ((MwLLCommonPixmap)pxdata)->raw;
+		unsigned char* d = MwPixmapGetRaw(pxdata);
 		int	       y;
 		int	       x;
-		int	       w  = ((MwLLCommonPixmap)pxdata)->width;
-		int	       h  = ((MwLLCommonPixmap)pxdata)->height;
-		int	       ox = (w - images[current].width / images[current].scale) / 2 - images[current].x / images[current].scale;
-		int	       oy = (h - images[current].height / images[current].scale) / 2 - images[current].y / images[current].scale;
+		MwRect	       rc;
 		char	       str[128];
+		int	       ox, oy;
+
+		MwPixmapGetSize(pxdata, &rc);
+
+		ox = (rc.width - images[current].width / images[current].scale) / 2 - images[current].x / images[current].scale;
+		oy = (rc.height - images[current].height / images[current].scale) / 2 - images[current].y / images[current].scale;
 
 		sprintf(str, "mimview [%d of %d] %s", current + 1, arrlen(images), images[current].path);
 
@@ -119,9 +126,9 @@ void image_render(void) {
 			  MwNtitle, str,
 			  NULL);
 
-		for(y = (oy < 0 ? 0 : 0); y < h + (oy < 0 ? -oy : -oy * 2); y++) {
-			for(x = (ox < 0 ? 0 : 0); x < w + (ox < 0 ? -ox : -ox * 2); x++) {
-				if(0 <= (y + oy) && (y + oy) < h && 0 <= (x + ox) && (x + ox) < w) {
+		for(y = (oy < 0 ? 0 : 0); y < rc.height + (oy < 0 ? -oy : -oy * 2); y++) {
+			for(x = (ox < 0 ? 0 : 0); x < rc.width + (ox < 0 ? -ox : -ox * 2); x++) {
+				if(0 <= (y + oy) && (y + oy) < rc.height && 0 <= (x + ox) && (x + ox) < rc.width) {
 					int	       ix = x * images[current].scale;
 					int	       iy = y * images[current].scale;
 					unsigned char* opx;
@@ -129,7 +136,7 @@ void image_render(void) {
 
 					if(0 <= iy && iy < images[current].height && 0 <= ix && ix < images[current].width) {
 						int i;
-						opx = &d[((y + oy) * w + x + ox) * 4];
+						opx = &d[((y + oy) * rc.width + x + ox) * 4];
 						ipx = &images[current].data[(iy * images[current].width + ix) * 4];
 
 						for(i = 0; i < 3; i++) {

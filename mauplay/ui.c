@@ -294,6 +294,7 @@ static void window_tick(MwWidget handle, void* user, void* client) {
 		if(img != NULL) {
 			int	       iw, ih, ic;
 			unsigned char* data = stbi_load_from_memory(img, sz, &iw, &ih, &ic, 4);
+			unsigned char* raw  = MwPixmapGetRaw(pxalbum);
 			if(data != NULL) {
 				int y, x;
 				for(y = 0; y < ALBUMWIDTH; y++) {
@@ -301,19 +302,19 @@ static void window_tick(MwWidget handle, void* user, void* client) {
 						int	       ix  = x * iw / ALBUMWIDTH;
 						int	       iy  = y * ih / ALBUMWIDTH;
 						unsigned char* ipx = &data[(iy * iw + ix) * 4];
-						unsigned char* opx = &((MwLLCommonPixmap)pxalbum)->raw[(y * ALBUMWIDTH + x) * 4];
+						unsigned char* opx = &raw[(y * ALBUMWIDTH + x) * 4];
 
 						memcpy(opx, ipx, 4);
 					}
 				}
 				free(data);
 			} else {
-				memset(((MwLLCommonPixmap)pxalbum)->raw, 0, ALBUMWIDTH * ALBUMWIDTH * 4);
+				memset(MwPixmapGetRaw(pxalbum), 0, ALBUMWIDTH * ALBUMWIDTH * 4);
 			}
 
 			free(img);
 		} else {
-			memset(((MwLLCommonPixmap)pxalbum)->raw, 0, ALBUMWIDTH * ALBUMWIDTH * 4);
+			memset(MwPixmapGetRaw(pxalbum), 0, ALBUMWIDTH * ALBUMWIDTH * 4);
 		}
 		MwLLPixmapUpdate(pxalbum);
 		MwForceRender(album);
@@ -368,7 +369,7 @@ static void window_tick(MwWidget handle, void* user, void* client) {
 		MwVaApply(timelabel,
 			  MwNtext, "",
 			  NULL);
-		memset(((MwLLCommonPixmap)pxalbum)->raw, 0, ALBUMWIDTH * ALBUMWIDTH * 4);
+		memset(MwPixmapGetRaw(pxalbum), 0, ALBUMWIDTH * ALBUMWIDTH * 4);
 		MwLLPixmapUpdate(pxalbum);
 		MwForceRender(album);
 	}

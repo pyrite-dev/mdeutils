@@ -149,7 +149,7 @@ int main() {
 	MwOpenGLMakeCurrent(opengl);
 
 	col = MwParseColor(window, MwGetText(window, MwNbackground));
-	MwGetColor(col, &r, &g, &b);
+	MwColorGet(col, &r, &g, &b);
 	MwLLFreeColor(col);
 
 	glClearColor(r / 255.0, g / 255.0, b / 255.0, 1);
