@@ -1,6 +1,6 @@
 include(MDEBase)
 include(MDEOpenGL)
-setup_project(mclock ${CMAKE_INSTALL_BINDIR})
+mde_setup_project(mclock ${CMAKE_INSTALL_BINDIR})
 
-opengl_add(mclock)
-math_add(mclock)
+mde_opengl_add(mclock)
+mde_math_add(mclock)

@@ -1,2 +1,2 @@
 include(MDEBase)
-setup_project(mbiff ${CMAKE_INSTALL_BINDIR})
+mde_setup_project(mbiff ${CMAKE_INSTALL_BINDIR})

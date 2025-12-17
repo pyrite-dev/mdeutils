@@ -1,4 +1,4 @@
 include(MDEBase)
-setup_project(mimview ${CMAKE_INSTALL_BINDIR})
+mde_setup_project(mimview ${CMAKE_INSTALL_BINDIR})
 
-math_add(mimview)
+mde_math_add(mimview)
