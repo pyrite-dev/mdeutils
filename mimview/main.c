@@ -79,7 +79,7 @@ int main(int argc, char** argv) {
 
 	window	 = MwVaCreateWidget(MwWindowClass, "main", NULL, MwDEFAULT, MwDEFAULT, 320, 320,
 				    MwNtitle, "mimview",
-				    MwNmodernLook, 0,
+				    COMMON_LOOK,
 				    NULL);
 	menu	 = MwCreateWidget(MwMenuClass, "menu", window, 0, 0, 0, 0);
 	image	 = MwCreateWidget(MwImageClass, "image", window, 0, 0, 0, 0);

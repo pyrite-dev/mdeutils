@@ -135,7 +135,7 @@ int main() {
 
 	window = MwVaCreateWidget(MwWindowClass, "main", NULL, MwDEFAULT, MwDEFAULT, 150, 150,
 				  MwNtitle, "mcompass",
-				  MwNmodernLook, 0,
+				  COMMON_LOOK,
 				  NULL);
 
 	opengl = MwCreateWidget(MwOpenGLClass, "opengl", window, 0, 0, 150, 150);
