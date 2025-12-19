@@ -160,6 +160,7 @@ int main() {
 
 	window	   = MwVaCreateWidget(MwWindowClass, "main", NULL, MwDEFAULT, MwDEFAULT, 600, 400,
 				      MwNtitle, "mauplay",
+				      MwNmodernLook, 0,
 				      NULL);
 	menu	   = MwCreateWidget(MwMenuClass, "menu", window, 0, 0, 0, 0);
 	albumframe = MwVaCreateWidget(MwFrameClass, "albumframe", window, 0, 0, 0, 0,

@@ -56,6 +56,7 @@ int main() {
 
 	window = MwVaCreateWidget(MwWindowClass, "main", NULL, MwDEFAULT, MwDEFAULT, 128, 128,
 				  MwNtitle, "mbiff",
+				  MwNmodernLook, 0,
 				  NULL);
 
 	empty = MwLoadImage(window, ICON128DIR "/mailempty.png");
