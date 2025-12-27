@@ -91,11 +91,11 @@ int main(int argc, char** argv) {
 	bzoomin	 = MwCreateWidget(MwButtonClass, "zoomin", window, 0, 0, 0, 0);
 	bzoomout = MwCreateWidget(MwButtonClass, "zoomout", window, 0, 0, 0, 0);
 
-	pxprojector = MwLoadImage(window, ICON128DIR "/projector.png");
-	pxprev	    = MwLoadImage(window, ICON16DIR "/previous.png");
-	pxnext	    = MwLoadImage(window, ICON16DIR "/next.png");
-	pxzoomin    = MwLoadImage(window, ICON16DIR "/zoomin.png");
-	pxzoomout   = MwLoadImage(window, ICON16DIR "/zoomout.png");
+	pxprojector = MwLoadImage(window, ICON128DIR "/devices/projector.png");
+	pxprev	    = MwLoadImage(window, ICON16DIR "/actions/previous.png");
+	pxnext	    = MwLoadImage(window, ICON16DIR "/actions/next.png");
+	pxzoomin    = MwLoadImage(window, ICON16DIR "/actions/zoom-in.png");
+	pxzoomout   = MwLoadImage(window, ICON16DIR "/actions/zoom-out.png");
 
 	pad = ButtonHeight / 2 - 16 / 2 - MwDefaultBorderWidth(window);
 

@@ -237,11 +237,11 @@ int main() {
 	pxrepeatsong = MwLoadXPM(window, repeatsong_xpm);
 	pxshuffle    = MwLoadXPM(window, shuffle_xpm);
 
-	pxoptical     = MwLoadImage(window, ICON16DIR "/optical.png");
-	pxfoldermusic = MwLoadImage(window, ICON16DIR "/folder-music.png");
-	pxartist      = MwLoadImage(window, ICON16DIR "/artist.png");
-	pxgenre	      = MwLoadImage(window, ICON16DIR "/genre.png");
-	pxradio	      = MwLoadImage(window, ICON128DIR "/radio.png");
+	pxoptical     = MwLoadImage(window, ICON16DIR "/devices/media-optical.png");
+	pxfoldermusic = MwLoadImage(window, ICON16DIR "/devices/folder-music.png");
+	pxartist      = MwLoadImage(window, ICON16DIR "/places/artist.png");
+	pxgenre	      = MwLoadImage(window, ICON16DIR "/actions/view-media-genre.png");
+	pxradio	      = MwLoadImage(window, ICON128DIR "/devices/radio.png");
 
 	MwSetVoid(album, MwNpixmap, pxalbum);
 

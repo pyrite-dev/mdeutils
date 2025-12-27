@@ -59,9 +59,9 @@ int main() {
 				  COMMON_LOOK,
 				  NULL);
 
-	empty = MwLoadImage(window, ICON128DIR "/mailempty.png");
-	full  = MwLoadImage(window, ICON128DIR "/mailfull.png");
-	mail  = MwLoadImage(window, ICON128DIR "/mail.png");
+	empty = MwLoadImage(window, ICON128DIR "/status/mail-read.png");
+	full  = MwLoadImage(window, ICON128DIR "/status/mail-unread.png");
+	mail  = MwLoadImage(window, ICON128DIR "/places/mailbox.png");
 	if(empty == NULL) empty = MwLoadXPM(window, mailempty);
 	if(full == NULL) full = MwLoadXPM(window, mailfull);
 	if(mail == NULL) mail = MwLoadXPM(window, mailempty);
