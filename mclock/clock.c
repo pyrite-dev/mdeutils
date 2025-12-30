@@ -147,6 +147,8 @@ int main() {
 	opengl	= MwCreateWidget(MwOpenGLClass, "opengl", window, 0, 0, 150, 150);
 	pxclock = MwLoadImage(window, ICON128DIR "/actions/clock.png");
 
+	MwVaApply(window, MwNiconPixmap, pxclock, NULL);
+
 	MwOpenGLMakeCurrent(opengl);
 
 	col = MwParseColor(window, MwGetText(window, MwNbackground));
