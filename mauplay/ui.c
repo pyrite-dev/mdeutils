@@ -272,7 +272,7 @@ static void list_activate(MwWidget handle, void* user, void* client) {
 		} else {
 			int index = *(int*)client;
 			if(index == 1) {
-				MwDispatchUserHandler(tree, MwNactivateHandler, ui_last);
+				MwDispatchUserHandler(tree, MwNtreeViewActivateHandler, ui_last);
 			} else {
 				audio_queue(current_list[index - 2]);
 			}
@@ -321,7 +321,7 @@ static void window_tick(MwWidget handle, void* user, void* client) {
 
 		if(ui_last == play_queue) {
 			MDEMutexUnlock(audio_mutex);
-			MwDispatchUserHandler(tree, MwNactivateHandler, ui_last);
+			MwDispatchUserHandler(tree, MwNtreeViewActivateHandler, ui_last);
 			MDEMutexLock(audio_mutex);
 		}
 
@@ -482,10 +482,10 @@ static void menu_menu(MwWidget handle, void* user, void* client) {
 }
 
 static void list_mouseup(MwWidget handle, void* user, void* client) {
-	MwLLMouse* m = client;
+	MwMouse* m = client;
 	int	   s;
 	if(ui_last != play_queue) return;
-	if(m->button != MwLLMouseRight) return;
+	if(m->button != MwMOUSE_RIGHT) return;
 	if((s = MwGetInteger(list, MwNvalue)) == -1) return;
 
 	MDEMutexLock(audio_mutex);
@@ -535,8 +535,8 @@ void ui_init(void) {
 		if(MwGetClass(l[i]) == MwFrameClass) MwAddUserHandler(l[i], MwNmouseUpHandler, list_mouseup, NULL);
 	}
 	free(l);
-	MwAddUserHandler(list, MwNactivateHandler, list_activate, NULL);
-	MwAddUserHandler(tree, MwNactivateHandler, tree_activate, NULL);
+	MwAddUserHandler(list, MwNlistBoxActivateHandler, list_activate, NULL);
+	MwAddUserHandler(tree, MwNtreeViewActivateHandler, tree_activate, NULL);
 	MwAddUserHandler(window, MwNtickHandler, window_tick, NULL);
 	MwAddUserHandler(seekbar, MwNchangedHandler, seekbar_changed, NULL);
 
